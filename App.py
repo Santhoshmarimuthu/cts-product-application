@@ -19,6 +19,29 @@ import gdown
 import zipfile
 import torch
 
+
+st.set_page_config(
+    page_title="NeuroAI - Medical Imaging Platform",
+    page_icon="⚕️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+st.markdown(
+    """
+    <style>
+    /* Force background to white */
+    body {
+        background-color: white;
+        color: black;
+    }
+    /* Force text color for main elements */
+    .css-1v0mbdj { color: black !important; }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # --- 1. Set up directories ---
 MODEL_DIR = "models_weight"
 os.makedirs(MODEL_DIR, exist_ok=True)
