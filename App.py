@@ -1,24 +1,4 @@
 import streamlit as st
-import torch
-import numpy as np
-import cv2
-import base64
-from PIL import Image
-import matplotlib.pyplot as plt
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import pandas as pd
-from datetime import datetime
-import time
-import html
-from models import SwinUnet, BrainTumorCNN, BrainTumorViT
-
-import os
-import gdown
-import zipfile
-import torch
-
 
 st.set_page_config(
     page_title="NeuroAI - Medical Imaging Platform",
@@ -41,6 +21,29 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+
+import torch
+import numpy as np
+import cv2
+import base64
+from PIL import Image
+import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import pandas as pd
+from datetime import datetime
+import time
+import html
+from models import SwinUnet, BrainTumorCNN, BrainTumorViT
+
+import os
+import gdown
+import zipfile
+import torch
+
+
 
 # --- 1. Set up directories ---
 MODEL_DIR = "models_weight"
@@ -1201,3 +1204,4 @@ if st.session_state.chat_history:
     setTimeout(scrollToBottom, 100);
     </script>
     """, unsafe_allow_html=True)
+
