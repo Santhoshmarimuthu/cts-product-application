@@ -1,28 +1,4 @@
 import streamlit as st
-
-st.set_page_config(
-    page_title="NeuroAI - Medical Imaging Platform",
-    page_icon="⚕️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-st.markdown(
-    """
-    <style>
-    /* Force background to white */
-    body {
-        background-color: white;
-        color: black;
-    }
-    /* Force text color for main elements */
-    .css-1v0mbdj { color: black !important; }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-
 import torch
 import numpy as np
 import cv2
@@ -38,54 +14,48 @@ import time
 import html
 from models import SwinUnet, BrainTumorCNN, BrainTumorViT
 
+import streamlit as st
 import os
 import gdown
 import zipfile
 import torch
 
-
-
-# --- 1. Set up directories ---
-MODEL_DIR = "models_weight"
-os.makedirs(MODEL_DIR, exist_ok=True)
-
-# --- 2. Google Drive file ID for your zip ---
-file_id = "1gmBzfuRP27_c6fjhgSLz1j7C7viePL6m"  # replace with your own if different
-zip_url = f"https://drive.google.com/uc?id={file_id}"
-zip_path = os.path.join(MODEL_DIR, "weights.zip")
-
-# --- 3. Download zip if not already exists ---
-if not os.path.exists(zip_path):
-    print("Downloading model zip...")
-    gdown.download(zip_url, zip_path, quiet=False)
-
-# --- 4. Extract zip ---
-with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-    zip_ref.extractall(MODEL_DIR)
-    print(f"Extracted models to {MODEL_DIR}")
-
-# --- 5. Check that models exist ---
-swin_path = "./models_weight/weights/swin_unet_tumor.pth"
-vit_path = "./models_weight/weights/vit_brain_tumor_model.pth"
-
-assert os.path.exists(swin_path), "swin_unter.pth not found!"
-assert os.path.exists(vit_path), "vit.pth not found!"
-
-# --- 6. Load models ---
-# Example: change according to your model architecture
-swin_model = torch.load(swin_path, map_location="cpu")
-vit_model = torch.load(vit_path, map_location="cpu")
-print("Models loaded successfully!")
-
-
-
-# ------------------ Page Configuration ------------------
 st.set_page_config(
     page_title="NeuroAI - Medical Imaging Platform",
     page_icon="⚕️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+
+MODEL_DIR = "models_weight"
+os.makedirs(MODEL_DIR, exist_ok=True)
+file_id = "1gmBzfuRP27_c6fjhgSLz1j7C7viePL6m"
+zip_url = f"https://drive.google.com/uc?id={file_id}"
+zip_path = os.path.join(MODEL_DIR, "weights.zip")
+
+@st.cache_resource
+def load_models():
+    # Download zip if missing
+    if not os.path.exists(zip_path):
+        gdown.download(zip_url, zip_path, quiet=False)
+
+    # Extract zip
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(MODEL_DIR)
+
+    # Paths to models inside extracted folder
+    swin_path = os.path.join(MODEL_DIR, "weights", "swin_unet_tumor.pth")
+    vit_path = os.path.join(MODEL_DIR, "weights", "vit_brain_tumor_model.pth")
+
+    # Load models
+    swin_model = torch.load(swin_path, map_location="cpu")
+    vit_model = torch.load(vit_path, map_location="cpu")
+    return swin_model, vit_model
+
+# Load models only once
+swin_model, vit_model = load_models()
+
 
 # ------------------ Advanced CSS Styling ------------------
 st.markdown("""
@@ -519,7 +489,7 @@ def load_models():
     try:
         # Segmentation Model
         seg_model = SwinUnet(in_ch=1, out_ch=1)
-        seg_model.load_state_dict(torch.load(swin_path, map_location=DEVICE))
+        seg_model.load_state_dict(torch.load("./models_weight/weights/swin_unet_tumor.pth", map_location=DEVICE))
         seg_model.to(DEVICE)
         seg_model.eval()
         
@@ -530,7 +500,7 @@ def load_models():
         clf_model = BrainTumorViT(num_classes=len(class_names), device=DEVICE)
 
         # Load the trained weights
-        state_dict = torch.load(vit_path, map_location=DEVICE)
+        state_dict = torch.load("./models_weight/weights/vit_brain_tumor_model.pth", map_location=DEVICE)
         clf_model.model.load_state_dict(state_dict)  # load weights into the internal ViT model
 
         # Move to device and set to eval
@@ -1204,4 +1174,3 @@ if st.session_state.chat_history:
     setTimeout(scrollToBottom, 100);
     </script>
     """, unsafe_allow_html=True)
-
